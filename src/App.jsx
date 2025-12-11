@@ -1,6 +1,55 @@
 import React, { useMemo, useState } from 'react';
 import { DndContext, useDraggable, useDroppable } from '@dnd-kit/core';
 
+// API Key 가져오기 (Vite 환경변수)
+const API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
+
+// AI 피드백 요청 함수
+const getAIFeedback = async (dividend, divisor, estimate, actualQuotient) => {
+  if (!API_KEY || API_KEY === 'undefined' || API_KEY.trim() === '') {
+    return null;
+  }
+
+  const prompt = `당신은 초등학교 3학년 수학 선생님입니다.
+학생이 ${dividend} ÷ ${divisor} 문제를 풀고 있습니다.
+실제 정답(몫)은 ${actualQuotient}입니다.
+학생이 어림한 값은 ${estimate}입니다.
+
+학생의 어림이 적절한지 짧게 피드백해주세요 (2-3문장).
+- 정답과 가까우면 칭찬해주세요.
+- 많이 다르면 어떻게 어림하면 좋을지 힌트를 주세요.
+- 친절하고 격려하는 말투로 답해주세요.`;
+
+  try {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${API_KEY}`
+      },
+      body: JSON.stringify({
+        model: 'gpt-3.5-turbo',
+        messages: [
+          { role: 'system', content: '당신은 친절한 초등학교 수학 선생님입니다. 짧고 격려하는 말투로 답변합니다.' },
+          { role: 'user', content: prompt }
+        ],
+        temperature: 0.7,
+        max_tokens: 150
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`API 호출 실패: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.choices[0].message.content.trim();
+  } catch (error) {
+    console.error('AI 피드백 오류:', error);
+    return null;
+  }
+};
+
 const createBlocks = (dividend) => {
   const hundreds = Math.floor(dividend / 100);
   const tens = Math.floor((dividend % 100) / 10);
@@ -340,6 +389,13 @@ const App = () => {
   const [step3Completed, setStep3Completed] = useState(false);
   const [step4Started, setStep4Started] = useState(false);
 
+  // AI 피드백 관련 상태
+  const [aiFeedback, setAiFeedback] = useState('');
+  const [aiFeedbackLoading, setAiFeedbackLoading] = useState(false);
+
+  // API Key 연결 상태 확인
+  const hasApiKey = API_KEY && API_KEY !== 'undefined' && API_KEY.trim() !== '';
+
   const dividendNum = Number(equationDividend);
   const divisorNum = Number(equationDivisor);
   const hasEquation =
@@ -371,10 +427,12 @@ const App = () => {
       setStep4Started(false);
       setBlocks4([]);
       setToolMode('none');
+      setAiFeedback('');
+      setAiFeedbackLoading(false);
     }
   }, [hasEquation, dividendNum, divisorNum]);
 
-  const handleEstimateSubmit = () => {
+  const handleEstimateSubmit = async () => {
     if (!estimate) {
       setEstimateError('어림한 값을 써 보세요.');
       return;
@@ -386,6 +444,19 @@ const App = () => {
     }
     setEstimateError('');
     setEstimateSubmitted(true);
+
+    // AI 피드백 요청
+    if (hasApiKey) {
+      setAiFeedbackLoading(true);
+      setAiFeedback('');
+      const feedback = await getAIFeedback(problem.dividend, problem.divisor, num, quotient);
+      setAiFeedbackLoading(false);
+      if (feedback) {
+        setAiFeedback(feedback);
+      } else {
+        setAiFeedback('AI 피드백을 가져오는 데 실패했어요. 하지만 계속 진행할 수 있어요!');
+      }
+    }
   };
 
   const currentBlocks = step4Started ? blocks4 : blocks3;
@@ -649,14 +720,29 @@ const App = () => {
 
   return (
     <div
-      className="rounded-3xl bg-white/80 shadow-xl border-4 border-pastelBlue/60 flex flex-col gap-4 sm:gap-6 relative overflow-hidden"
+      className="rounded-3xl bg-white/80 shadow-xl border-4 border-pastelBlue/60 flex flex-col relative overflow-hidden"
       onMouseMove={(e) => {
         if (!isHammerMode) return;
         setCursorPos({ x: e.clientX, y: e.clientY });
       }}
     >
+      {/* 헤더 */}
+      <div className="bg-gradient-to-r from-pastelBlue via-pastelPurple to-pastelPink px-5 py-4 sm:px-8 sm:py-5 text-center relative">
+        <h1 className="text-xl sm:text-2xl font-extrabold text-slate-800" style={{ textShadow: '1px 1px 2px rgba(255, 255, 255, 0.5)' }}>
+          수모형 조작하며 탐구하기
+        </h1>
+        {/* 홈 버튼 */}
+        <a
+          href="/main.html"
+          className="absolute top-1/2 right-3 sm:right-4 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 bg-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform border-2 border-white/50"
+          title="메인으로"
+        >
+          <span className="text-xl sm:text-2xl">🏠</span>
+        </a>
+      </div>
+
       {/* 상단: 문제 제시 + 식 입력 */}
-      <div className="rounded-t-3xl bg-gradient-to-r from-pastelBlue via-pastelPurple to-pastelPink px-5 py-4 sm:px-8 sm:py-6 flex flex-col gap-4">
+      <div className="bg-gradient-to-r from-pastelBlue/30 via-pastelPurple/20 to-pastelPink/30 px-5 py-4 sm:px-8 sm:py-6 flex flex-col gap-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="max-w-xl">
             <p className="text-xs sm:text-sm font-semibold text-sky-900/80">
@@ -734,9 +820,27 @@ const App = () => {
                 </p>
               )}
               <div className="mt-1 rounded-xl border-2 border-slate-300 bg-slate-50/80 px-3 py-2 sm:px-4 sm:py-3 flex flex-col gap-1">
-                <p className="text-xs sm:text-sm font-semibold text-slate-700">AI 피드백</p>
-                <div className="h-12 sm:h-16 rounded-lg bg-white/80 border border-dashed border-slate-300 flex items-center justify-center text-[11px] sm:text-xs text-slate-400">
-                  나중에 AI가 어림한 값에 대해 피드백을 보여 줄 공간입니다.
+                <div className="flex items-center justify-between">
+                  <p className="text-xs sm:text-sm font-semibold text-slate-700">AI 피드백</p>
+                  {hasApiKey ? (
+                    <span className="text-[10px] sm:text-xs text-emerald-600 font-medium">🟢 AI 연결됨</span>
+                  ) : (
+                    <span className="text-[10px] sm:text-xs text-rose-500 font-medium">🔴 API Key 없음</span>
+                  )}
+                </div>
+                <div className="min-h-[48px] sm:min-h-[64px] rounded-lg bg-white/80 border border-dashed border-slate-300 flex items-center justify-center px-3 py-2 text-[11px] sm:text-xs">
+                  {aiFeedbackLoading ? (
+                    <div className="flex items-center gap-2 text-slate-500">
+                      <div className="w-4 h-4 border-2 border-slate-300 border-t-sky-500 rounded-full animate-spin" />
+                      <span>AI 선생님이 피드백을 작성 중이에요...</span>
+                    </div>
+                  ) : aiFeedback ? (
+                    <p className="text-slate-700 text-center leading-relaxed">{aiFeedback}</p>
+                  ) : hasApiKey ? (
+                    <p className="text-slate-400">어림하기 확인을 누르면 AI 선생님이 피드백을 줄 거예요!</p>
+                  ) : (
+                    <p className="text-slate-400">.env 파일에 VITE_OPENAI_API_KEY를 설정하면 AI 피드백을 받을 수 있어요.</p>
+                  )}
                 </div>
               </div>
             </div>
