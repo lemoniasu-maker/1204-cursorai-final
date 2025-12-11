@@ -53,28 +53,28 @@ const LEVEL_CONFIG = [
 // ===== Fallback 문제 (API 실패 시 사용) =====
 const FALLBACK_PROBLEMS = [
   [
-    { question: "사탕 30개를 3명의 친구에게 똑같이 나누어 주려고 합니다. 한 명에게 몇 개씩 줄 수 있을까요?", answer: 10, hint: "30을 3으로 나누어 보세요." },
-    { question: "연필 40자루를 5명이 똑같이 나누어 가집니다. 한 명당 몇 자루씩 가질 수 있나요?", answer: 8, hint: "40 ÷ 5를 계산해 보세요." }
+    { question: "사탕 30개를 3명의 친구에게 똑같이 나누어 주려고 합니다. 한 명에게 몇 개씩 줄 수 있을까요?", answer: 10, remainder: 0, hint: "30을 3으로 나누어 보세요." },
+    { question: "연필 40자루를 5명이 똑같이 나누어 가집니다. 한 명당 몇 자루씩 가질 수 있나요?", answer: 8, remainder: 0, hint: "40 ÷ 5를 계산해 보세요." }
   ],
   [
-    { question: "구슬 50개를 6개의 상자에 똑같이 나누어 담으려고 합니다. 한 상자에 몇 개씩 담을 수 있나요?", answer: 8, hint: "50 ÷ 6의 몫을 구해보세요. 나머지는 빼고 답을 써요." },
-    { question: "풍선 70개를 8명에게 똑같이 나누어 줍니다. 한 명당 몇 개씩 받을 수 있을까요?", answer: 8, hint: "70 ÷ 8을 계산해 보세요." }
+    { question: "구슬 50개를 6개의 상자에 똑같이 나누어 담으려고 합니다. 한 상자에 몇 개씩 담을 수 있고, 나머지는 몇 개인가요?", answer: 8, remainder: 2, hint: "50 ÷ 6의 몫과 나머지를 구해보세요." },
+    { question: "풍선 70개를 8명에게 똑같이 나누어 줍니다. 한 명당 몇 개씩 받고, 나머지는 몇 개인가요?", answer: 8, remainder: 6, hint: "70 ÷ 8을 계산해 보세요." }
   ],
   [
-    { question: "색종이 36장을 4명이 똑같이 나누어 가집니다. 한 명이 몇 장씩 가질 수 있나요?", answer: 9, hint: "36 ÷ 4를 계산해 보세요." },
-    { question: "쿠키 48개를 6개의 접시에 똑같이 담습니다. 한 접시에 몇 개씩 담을 수 있나요?", answer: 8, hint: "48을 6으로 나누어 보세요." }
+    { question: "색종이 36장을 4명이 똑같이 나누어 가집니다. 한 명이 몇 장씩 가질 수 있나요?", answer: 9, remainder: 0, hint: "36 ÷ 4를 계산해 보세요." },
+    { question: "쿠키 48개를 6개의 접시에 똑같이 담습니다. 한 접시에 몇 개씩 담을 수 있나요?", answer: 8, remainder: 0, hint: "48을 6으로 나누어 보세요." }
   ],
   [
-    { question: "사과 57개를 7명이 똑같이 나누어 가집니다. 한 명당 몇 개씩 가질 수 있을까요?", answer: 8, hint: "57 ÷ 7의 몫을 구해보세요." },
-    { question: "도넛 65개를 8개의 상자에 나누어 담습니다. 한 상자에 몇 개씩 담을 수 있나요?", answer: 8, hint: "65 ÷ 8을 계산해 보세요." }
+    { question: "사과 57개를 7명이 똑같이 나누어 가집니다. 한 명당 몇 개씩 가지고, 나머지는 몇 개인가요?", answer: 8, remainder: 1, hint: "57 ÷ 7의 몫과 나머지를 구해보세요." },
+    { question: "도넛 65개를 8개의 상자에 나누어 담습니다. 한 상자에 몇 개씩 담고, 나머지는 몇 개인가요?", answer: 8, remainder: 1, hint: "65 ÷ 8을 계산해 보세요." }
   ],
   [
-    { question: "초콜릿 126개를 3명의 친구에게 똑같이 나누어 줍니다. 한 명에게 몇 개씩 줄 수 있나요?", answer: 42, hint: "126 ÷ 3을 세로셈으로 계산해 보세요." },
-    { question: "연필 248자루를 4개의 필통에 똑같이 나누어 담습니다. 한 필통에 몇 자루씩 담나요?", answer: 62, hint: "248 ÷ 4를 계산해 보세요." }
+    { question: "초콜릿 126개를 3명의 친구에게 똑같이 나누어 줍니다. 한 명에게 몇 개씩 줄 수 있나요?", answer: 42, remainder: 0, hint: "126 ÷ 3을 세로셈으로 계산해 보세요." },
+    { question: "연필 248자루를 4개의 필통에 똑같이 나누어 담습니다. 한 필통에 몇 자루씩 담나요?", answer: 62, remainder: 0, hint: "248 ÷ 4를 계산해 보세요." }
   ],
   [
-    { question: "스티커 357장을 7명에게 똑같이 나누어 줍니다. 한 명당 몇 장씩 받을 수 있을까요?", answer: 51, hint: "357 ÷ 7을 세로셈으로 풀어보세요." },
-    { question: "구슬 523개를 9개의 주머니에 똑같이 나누어 담습니다. 한 주머니에 몇 개씩 담을 수 있나요?", answer: 58, hint: "523 ÷ 9의 몫을 구해보세요." }
+    { question: "스티커 357장을 7명에게 똑같이 나누어 줍니다. 한 명당 몇 장씩 받을 수 있나요?", answer: 51, remainder: 0, hint: "357 ÷ 7을 세로셈으로 풀어보세요." },
+    { question: "구슬 523개를 9개의 주머니에 똑같이 나누어 담습니다. 한 주머니에 몇 개씩 담고, 나머지는 몇 개인가요?", answer: 58, remainder: 1, hint: "523 ÷ 9의 몫과 나머지를 구해보세요." }
   ]
 ];
 
@@ -113,7 +113,13 @@ function setupEventListeners() {
   document.getElementById('checkBtn').addEventListener('click', checkAnswer);
 
   // 엔터 키로 정답 확인
-  document.getElementById('answerInput').addEventListener('keypress', function(e) {
+  document.getElementById('quotientInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      checkAnswer();
+    }
+  });
+  
+  document.getElementById('remainderInput').addEventListener('keypress', function(e) {
     if (e.key === 'Enter') {
       checkAnswer();
     }
@@ -248,13 +254,15 @@ function showLoading(isLoading) {
 
 // ===== 정답 입력 활성화 =====
 function enableAnswerInput() {
-  document.getElementById('answerInput').value = '';
-  document.getElementById('answerInput').focus();
+  document.getElementById('quotientInput').value = '';
+  document.getElementById('remainderInput').value = '';
+  document.getElementById('quotientInput').focus();
 }
 
 // ===== UI 초기화 =====
 function resetUI() {
-  document.getElementById('answerInput').value = '';
+  document.getElementById('quotientInput').value = '';
+  document.getElementById('remainderInput').value = '';
   document.getElementById('feedbackContent').textContent = '문제를 풀고 정답을 확인해 보세요!';
   document.getElementById('feedbackContent').className = 'feedback-content';
   
@@ -269,22 +277,40 @@ function checkAnswer() {
     return;
   }
 
-  const userAnswer = parseInt(document.getElementById('answerInput').value);
+  const userQuotient = parseInt(document.getElementById('quotientInput').value);
+  const userRemainder = parseInt(document.getElementById('remainderInput').value) || 0;
   const feedbackContent = document.getElementById('feedbackContent');
   const feedbackBox = document.getElementById('feedbackBox');
 
-  if (isNaN(userAnswer)) {
-    alert('숫자를 입력해 주세요!');
+  if (isNaN(userQuotient)) {
+    alert('몫을 입력해 주세요!');
     return;
   }
 
   const existingHint = feedbackBox.querySelector('.feedback-hint');
   if (existingHint) existingHint.remove();
 
-  if (userAnswer === currentProblem.answer) {
+  // 정답의 나머지 계산 (문제에 remainder가 없으면 0으로 처리)
+  const correctRemainder = currentProblem.remainder !== undefined ? currentProblem.remainder : 0;
+  
+  const quotientCorrect = userQuotient === currentProblem.answer;
+  const remainderCorrect = userRemainder === correctRemainder;
+
+  if (quotientCorrect && remainderCorrect) {
     feedbackContent.textContent = '참 잘했어요! 🎉 정답이에요!';
     feedbackContent.className = 'feedback-content feedback-correct';
     showConfetti();
+  } else if (quotientCorrect && !remainderCorrect) {
+    feedbackContent.textContent = '몫은 맞았어요! 나머지를 다시 확인해 볼까요?';
+    feedbackContent.className = 'feedback-content feedback-wrong';
+  } else if (!quotientCorrect && remainderCorrect) {
+    feedbackContent.textContent = '나머지는 맞았어요! 몫을 다시 확인해 볼까요?';
+    feedbackContent.className = 'feedback-content feedback-wrong';
+    
+    const hintDiv = document.createElement('div');
+    hintDiv.className = 'feedback-hint';
+    hintDiv.textContent = '💡 힌트: ' + currentProblem.hint;
+    feedbackBox.appendChild(hintDiv);
   } else {
     feedbackContent.textContent = '아쉬워요, 다시 한번 생각해 볼까요?';
     feedbackContent.className = 'feedback-content feedback-wrong';
@@ -346,7 +372,7 @@ function setupCanvas() {
 function resizeCanvas() {
   const rect = canvas.parentElement.getBoundingClientRect();
   canvas.width = rect.width;
-  canvas.height = 300;
+  canvas.height = 500;
   ctx.fillStyle = 'white';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 }

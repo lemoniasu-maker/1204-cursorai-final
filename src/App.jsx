@@ -729,7 +729,7 @@ const App = () => {
         </h1>
         {/* 홈 버튼 */}
         <a
-          href="/main.html"
+          href="/index.html"
           className="absolute top-1/2 right-3 sm:right-4 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 bg-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform border-2 border-white/50"
           title="메인으로"
         >
