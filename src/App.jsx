@@ -675,17 +675,13 @@ const App = () => {
       />
 
       <div className="mt-4 flex flex-col gap-3">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center">
           <span className="text-sm sm:text-base font-semibold text-slate-800">
             나누는 수:{' '}
             <span className="text-xl sm:text-2xl font-extrabold text-sky-700">
               {problem.divisor}
             </span>{' '}
             개의 접시
-          </span>
-          <span className="text-xs sm:text-sm text-slate-600">
-            각 접시에 들어가야 하는 수:{' '}
-            <span className="font-bold text-emerald-700">{quotient}</span>
           </span>
         </div>
         <div className="flex flex-col sm:flex-row gap-3">
