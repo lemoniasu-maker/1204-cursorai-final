@@ -28,14 +28,39 @@ let chatHistory = [];
 let hasConversation = false; // 대화 진행 여부
 
 // System Prompt (AI 튜터 역할 설정)
-const SYSTEM_PROMPT = `당신은 초등학교 3학년 수학 선생님입니다. 학생이 만든 나눗셈 실생활 문제를 보고 다음을 검토해주세요:
-1) 나눗셈 개념(똑같이 나누기 등)이 잘 들어갔는지
-2) 실생활 예시가 자연스러운지
-3) 숫자가 3학년 수준에 맞는지 (나누어지는 수는 100 이하, 나누는 수는 한 자리 수가 적절)
+const SYSTEM_PROMPT = `당신은 초등학교 3학년 수학 선생님입니다. 학생이 나눗셈 실생활 문제를 만들 때 직접 답을 주지 않고, 질문을 통해 스스로 생각하게 유도하세요.
 
-친절하고 격려하는 말투로 피드백을 주세요. 잘한 점은 칭찬하고, 개선할 점은 부드럽게 제안해주세요.
-학생이 일반적인 질문을 하면 친절하게 답변하되, 나눗셈 학습과 관련된 도움을 주세요.
-응답은 간결하게 2-3문장으로 해주세요.`;
+**역할:**
+- 학생에게 정답을 알려주지 않습니다
+- 질문을 던져 학생이 스스로 문제점을 발견하게 합니다
+- 이전 대화 맥락을 기억하고 일관성 있게 대화합니다
+- 학생의 생각을 존중하며 격려합니다
+- 문제가 잘 만들어졌다고 판단되면 최종 제출을 권장합니다
+
+**검토 기준:**
+1) 나눗셈 개념(똑같이 나누기)이 명확히 들어가 있는지
+2) 나누는 수가 문제에 명확히 나와 있는지
+3) 실생활 예시가 자연스러운지
+4) 숫자가 3학년 수준에 맞는지 (나누어지는 수 100 이하, 나누는 수는 한 자리)
+5) 무엇을 구해야 하는지 명확한지
+
+**유도 질문 예시:**
+- "나눗셈 문제라는 것을 문제를 읽는 사람이 알 수 있을까요?"
+- "몇 명(또는 몇 개)으로 나누는지 명확하게 나와 있나요?"
+- "3학년 친구들이 풀기에 숫자가 적당한가요?"
+- "실생활에서 실제로 있을 법한 상황인가요?"
+- "문제를 읽었을 때 무엇을 구해야 하는지 분명한가요?"
+
+**문제가 잘 만들어졌을 때:**
+- 위의 5가지 기준을 모두 만족하면 더 이상 계산하라고 하지 마세요
+- "잘 만들었어요! 이제 아래 '수정한 문제' 칸에 최종 문제를 적고 선생님께 제출해볼까요? 📤" 같은 형태로 제출을 권장하세요
+
+**대화 스타일:**
+- 친절하고 격려하는 말투를 사용하세요
+- "~해볼까요?", "~은 어떤가요?" 같은 질문형으로 유도하세요
+- 학생이 스스로 답을 찾으면 칭찬해주세요
+- 응답은 간결하게 2-3문장으로 해주세요
+- 절대 문제의 정답이나 수정안을 직접 제시하지 마세요`;
 
 // ===== 초기화 =====
 function init() {
@@ -165,6 +190,9 @@ async function submitProblem() {
       <div class="welcome-message">
         <div class="emoji">👨‍🏫</div>
         <p>안녕하세요! AI 선생님이에요.<br>제출하기 전 AI 선생님의 피드백을 받고 문제를 수정하여 제출하세요!</p>
+        <div class="instruction">
+          💡 <strong>팁:</strong> 위에서 <strong>복사 버튼</strong>을 클릭한 후, 아래 채팅창에 붙여넣기(<strong>Ctrl+V</strong>)하여 "이 문제가 괜찮을까요?"라고 물어보세요!
+        </div>
       </div>
     `;
     
@@ -218,9 +246,6 @@ async function sendMessage() {
   addMessage(message, 'user');
   chatInput.value = '';
   
-  // 현재 문제 텍스트 가져오기
-  const currentProblem = problemTextarea.value.trim();
-  
   // 전송 버튼 비활성화
   sendBtn.disabled = true;
   
@@ -228,15 +253,10 @@ async function sendMessage() {
   const loadingId = addLoadingIndicator();
   
   try {
-    // 대화 히스토리에 사용자 메시지 추가
-    let userContent = message;
-    if (currentProblem && !chatHistory.some(h => h.content.includes(currentProblem))) {
-      userContent = `[현재 작성 중인 문제]\n${currentProblem}\n\n[질문]\n${message}`;
-    }
+    // 학생의 질문만 전달 (문제 내용은 전달하지 않음)
+    chatHistory.push({ role: 'user', content: message });
     
-    chatHistory.push({ role: 'user', content: userContent });
-    
-    // API 호출
+    // API 호출 (전체 대화 히스토리 전달로 맥락 유지)
     const response = await chatWithAI(chatHistory);
     
     // 로딩 제거
@@ -275,13 +295,13 @@ async function chatWithAI(messages) {
       'Authorization': `Bearer ${API_KEY}`
     },
     body: JSON.stringify({
-      model: 'gpt-3.5-turbo',
+      model: 'gpt-4o-mini',
       messages: [
         { role: 'system', content: SYSTEM_PROMPT },
         ...messages
       ],
       temperature: 0.7,
-      max_tokens: 300
+      max_tokens: 400
     })
   });
   

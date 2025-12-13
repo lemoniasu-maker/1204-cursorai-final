@@ -5,9 +5,14 @@
 @tailwind utilities;
 
 body {
-  @apply m-0 min-h-screen bg-gradient-to-b from-pastelBlue/40 via-pastelPink/30 to-pastelYellow/40 flex items-stretch justify-center;
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
   font-family: 'Jua', sans-serif;
   font-size: 18px;
+  /* 배경 이미지는 page1.html에서 설정됨 */
 }
 
 #app {

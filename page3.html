@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>나눗셈 실생활 문제 만들기 - 나눗셈 탐험대</title>
+  <link rel="icon" type="image/png" href="/favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
@@ -30,10 +31,11 @@
       font-family: 'Jua', sans-serif;
       font-size: 18px;
       min-height: 100vh;
-      background: linear-gradient(135deg, 
-        rgba(163, 199, 255, 0.4) 0%, 
-        rgba(255, 179, 198, 0.3) 50%, 
-        rgba(255, 232, 163, 0.4) 100%);
+      background-image: url('./image/Gemini_Generated_Image_r5nlnur5nlnur5nl.png');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
       padding: 1rem;
     }
 
@@ -413,6 +415,25 @@
       margin-bottom: 0.5rem;
     }
 
+    .welcome-message p {
+      margin-bottom: 0.75rem;
+    }
+
+    .welcome-message .instruction {
+      font-size: 0.85rem;
+      color: var(--text-medium);
+      background: rgba(163, 199, 255, 0.2);
+      padding: 0.5rem 1rem;
+      border-radius: 12px;
+      margin-top: 1rem;
+      border: 1px solid rgba(163, 199, 255, 0.4);
+    }
+
+    .welcome-message .instruction strong {
+      color: var(--pastel-blue);
+      font-weight: 700;
+    }
+
     /* ===== 반응형 ===== */
     @media (max-width: 480px) {
       .header h1 {
@@ -500,6 +521,9 @@
         <div class="welcome-message">
           <div class="emoji">👨‍🏫</div>
           <p>안녕하세요! AI 선생님이에요.<br>제출하기 전 AI 선생님의 피드백을 받고 문제를 수정하여 제출하세요!</p>
+          <div class="instruction">
+            💡 <strong>팁:</strong> 위에서 <strong>복사 버튼</strong>을 클릭한 후, 아래 채팅창에 붙여넣기(<strong>Ctrl+V</strong>)하여 "이 문제가 괜찮을까요?"라고 물어보세요!
+          </div>
         </div>
       </div>
       <div class="chat-input-area">

@@ -10,15 +10,38 @@ const getAIFeedback = async (dividend, divisor, estimate, actualQuotient) => {
     return null;
   }
 
-  const prompt = `당신은 초등학교 3학년 수학 선생님입니다.
-학생이 ${dividend} ÷ ${divisor} 문제를 풀고 있습니다.
-실제 정답(몫)은 ${actualQuotient}입니다.
-학생이 어림한 값은 ${estimate}입니다.
+  const estimateProduct = estimate * divisor;
+  const isOneDigitAnswer = actualQuotient < 10;
 
-학생의 어림이 적절한지 짧게 피드백해주세요 (2-3문장).
-- 정답과 가까우면 칭찬해주세요.
-- 많이 다르면 어떻게 어림하면 좋을지 힌트를 주세요.
-- 친절하고 격려하는 말투로 답해주세요.`;
+  const prompt = `학생이 ${dividend} ÷ ${divisor} 문제를 풀고 있습니다.
+학생이 어림한 값은 ${estimate}입니다.
+정답은 ${actualQuotient}입니다.
+
+학생이 어림한 ${estimate}에 나누는 수 ${divisor}를 곱하면 ${estimateProduct}가 됩니다.
+이것을 나누어지는 수 ${dividend}와 비교해서 피드백을 주세요.
+
+[작성 규칙]
+${isOneDigitAnswer ? 
+`1. 정답이 한 자리 수(10보다 작음)이므로, 어림한 값이 정답과 1~2 정도 차이면 잘한 것입니다.
+2. 차이가 2 이하면 잘 어림했다고 칭찬해주세요.
+3. 차이가 크면 "아쉽네요."로 시작하면서, "어림한 몫 × 나누는 수"의 결과가 나누어지는 수와 비교해 힌트를 주세요.` :
+`1. 어림하기는 "몇십" 단위로 맞추는 것이 목표입니다. 학생이 어림한 값을 10으로 나눈 몫과 정답을 10으로 나눈 몫이 같으면 매우 잘한 것입니다.
+   예시: 정답이 34일 때 30~39 범위로 어림하면 잘한 것입니다.
+2. 몇십 단위로 잘 어림했다면 크게 칭찬해주세요.
+3. 몇십 단위를 벗어났다면 "아쉽네요."로 시작하면서, "어림한 몫 × 나누는 수"의 결과가 나누어지는 수보다 크거나 작다는 것을 언급하며 힌트를 주세요.`}
+4. 존댓말을 쓰고, 이모지(😊)를 하나 정도 사용해 주세요.
+5. 답변은 3문장을 넘기지 마세요.
+6. 절대 정답을 직접적으로 말하지 마세요.
+
+[좋은 답변 예시]
+${isOneDigitAnswer ?
+`- "잘 어림했어요! 2에 4를 곱하면 8이 되니까 딱 맞네요. 훌륭해요! 👍"
+- "아주 가까워요! 어림하기를 잘하네요. 😊"
+- "아쉽네요. 5에 2를 곱하면 10이 되어서 8보다 크네요. 5보다 작은 수로 생각해보면 어떨까요? 😊"` :
+`- "와, 정말 잘 어림했어요! 30에 2를 곱하면 60이 되니까 68과 가까워요. 훌륭해요! 👍"
+- "30대로 잘 생각했어요! 어림하기를 정말 잘하네요. 😊"
+- "아쉽네요. 40에 3을 곱하면 120이 되어서 132보다 작네요. 40보다 조금 더 큰 수로 생각해보면 어떨까요? 😊"
+- "아쉽네요. 60에 2를 곱하면 120이 되어서 85보다 크네요. 60보다 작은 수수로 다시 생각해봐요! 😊"`}`;
 
   try {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -28,12 +51,12 @@ const getAIFeedback = async (dividend, divisor, estimate, actualQuotient) => {
         'Authorization': `Bearer ${API_KEY}`
       },
       body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
+        model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: '당신은 친절한 초등학교 수학 선생님입니다. 짧고 격려하는 말투로 답변합니다.' },
           { role: 'user', content: prompt }
         ],
-        temperature: 0.7,
+        temperature: 0.5,
         max_tokens: 150
       })
     });
@@ -896,21 +919,21 @@ const App = () => {
               )}
               <div className="mt-1 rounded-xl border-2 border-slate-300 bg-slate-50/80 px-3 py-2 sm:px-4 sm:py-3 flex flex-col gap-1">
                 <div className="flex items-center justify-between">
-                  <p className="text-xs sm:text-sm font-semibold text-slate-700">AI 피드백</p>
+                  <p className="text-sm sm:text-base font-semibold text-slate-700">AI 피드백</p>
                   {hasApiKey ? (
-                    <span className="text-[10px] sm:text-xs text-emerald-600 font-medium">🟢 AI 연결됨</span>
+                    <span className="text-xs sm:text-sm text-emerald-600 font-medium">🟢 AI 연결됨</span>
                   ) : (
-                    <span className="text-[10px] sm:text-xs text-rose-500 font-medium">🔴 API Key 없음</span>
+                    <span className="text-xs sm:text-sm text-rose-500 font-medium">🔴 API Key 없음</span>
                   )}
                 </div>
-                <div className="min-h-[48px] sm:min-h-[64px] rounded-lg bg-white/80 border border-dashed border-slate-300 flex items-center justify-center px-3 py-2 text-[11px] sm:text-xs">
+                <div className="min-h-[64px] sm:min-h-[80px] rounded-lg bg-white/80 border border-dashed border-slate-300 flex items-center justify-center px-3 py-3 sm:px-4 sm:py-4 text-sm sm:text-base">
                   {aiFeedbackLoading ? (
                     <div className="flex items-center gap-2 text-slate-500">
                       <div className="w-4 h-4 border-2 border-slate-300 border-t-sky-500 rounded-full animate-spin" />
                       <span>AI 선생님이 피드백을 작성 중이에요...</span>
                     </div>
                   ) : aiFeedback ? (
-                    <p className="text-slate-700 text-center leading-relaxed">{aiFeedback}</p>
+                    <p className="text-slate-700 text-center leading-relaxed font-medium">{aiFeedback}</p>
                   ) : hasApiKey ? (
                     <p className="text-slate-400">어림하기 확인을 누르면 AI 선생님이 피드백을 줄 거예요!</p>
                   ) : (
