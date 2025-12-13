@@ -835,7 +835,7 @@ const App = () => {
       {/* 헤더 */}
       <div className="bg-gradient-to-r from-pastelBlue via-pastelPurple to-pastelPink px-5 py-4 sm:px-8 sm:py-5 text-center relative">
         <h1 className="text-xl sm:text-2xl font-extrabold text-slate-800" style={{ textShadow: '1px 1px 2px rgba(255, 255, 255, 0.5)' }}>
-          수모형 조작하며 탐구하기
+          수모형으로 활동하며 탐구하기
         </h1>
       </div>
 
