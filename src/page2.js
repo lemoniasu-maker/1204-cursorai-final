@@ -1,4 +1,4 @@
-// ===== page2.js - 문장제 나눗셈 문제 풀이 =====
+// ===== page2.js - 실생활 문제 풀이 =====
 
 // API Key 가져오기 (Vite 환경변수)
 const API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
@@ -179,7 +179,7 @@ async function generateProblemAI(levelIndex) {
   const config = LEVEL_CONFIG[levelIndex];
   
   const prompt = `당신은 초등학교 3학년 수학 선생님입니다.
-${config.description} 나눗셈 문장제 문제를 1개 만들어주세요.
+${config.description} 나눗셈 실생활 문제를 1개 만들어주세요.
 
 조건:
 - 나누어지는 수(피제수): ${config.dividendMin} ~ ${config.dividendMax}
@@ -249,6 +249,11 @@ function showLoading(isLoading) {
       <div class="loading-spinner"></div>
       <p class="loading-text">AI 선생님이 문제를 만들고 있어요...</p>
     `;
+  } else {
+    // 로딩 종료 시 원래 구조 복원
+    problemBox.innerHTML = `
+      <p class="problem-text" id="problemText"></p>
+    `;
   }
 }
 
@@ -256,7 +261,7 @@ function showLoading(isLoading) {
 function enableAnswerInput() {
   document.getElementById('quotientInput').value = '';
   document.getElementById('remainderInput').value = '';
-  document.getElementById('quotientInput').focus();
+  document.getElementById('quotientInput').focus({ preventScroll: true });
 }
 
 // ===== UI 초기화 =====

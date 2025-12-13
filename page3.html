@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>문장제 나눗셈 문제 만들기 - 나눗셈 탐험대</title>
+  <title>나눗셈 실생활 문제 만들기 - 나눗셈 탐험대</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
@@ -47,6 +47,102 @@
       overflow: hidden;
     }
 
+    /* ===== 네비게이션 바 ===== */
+    .navbar {
+      background: white;
+      border-bottom: 3px solid rgba(163, 199, 255, 0.6);
+      padding: 0.75rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .nav-home {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-dark);
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .nav-home:hover {
+      color: var(--pastel-blue);
+    }
+
+    .nav-home-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--pastel-blue);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      border: 2px solid #7ab3ff;
+      box-shadow: 0 2px 8px rgba(163, 199, 255, 0.4);
+      transition: all 0.2s;
+    }
+
+    .nav-home:hover .nav-home-icon {
+      transform: scale(1.1);
+      background: #7ab3ff;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .nav-link {
+      padding: 0.5rem 1rem;
+      background: rgba(163, 199, 255, 0.2);
+      border: 2px solid transparent;
+      border-radius: 20px;
+      color: var(--text-dark);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .nav-link:hover {
+      background: rgba(163, 199, 255, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .nav-link.active {
+      background: var(--pastel-blue);
+      border-color: #7ab3ff;
+      box-shadow: 0 2px 8px rgba(163, 199, 255, 0.4);
+    }
+
+    @media (max-width: 600px) {
+      .navbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .nav-home {
+        text-align: center;
+      }
+
+      .nav-links {
+        justify-content: center;
+      }
+
+      .nav-link {
+        flex: 1;
+        min-width: 120px;
+        text-align: center;
+      }
+    }
+
     /* ===== 헤더 ===== */
     .header {
       background: linear-gradient(90deg, var(--pastel-blue), var(--pastel-purple), var(--pastel-pink));
@@ -60,29 +156,6 @@
       font-size: 1.75rem;
       font-weight: 800;
       text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
-    }
-
-    .home-btn {
-      position: absolute;
-      right: 1rem;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 40px;
-      height: 40px;
-      background: white;
-      border-radius: 50%;
-      border: none;
-      cursor: pointer;
-      font-size: 1.25rem;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-      transition: transform 0.2s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .home-btn:hover {
-      transform: translateY(-50%) scale(1.1);
     }
 
     /* ===== API 상태 배너 ===== */
@@ -367,10 +440,22 @@
 <body>
 
 <div class="container">
+  <!-- 네비게이션 바 -->
+  <nav class="navbar">
+    <a href="index.html" class="nav-home">
+      <span class="nav-home-icon">🏠</span>
+      <span>나눗셈 탐험대</span>
+    </a>
+    <div class="nav-links">
+      <a href="page1.html" class="nav-link">1단계: 수모형 탐구</a>
+      <a href="page2.html" class="nav-link">2단계: 실생활 문제</a>
+      <a href="page3.html" class="nav-link active">3단계: 문제 만들기</a>
+    </div>
+  </nav>
+
   <!-- 헤더 -->
   <header class="header">
-    <h1>문장제 나눗셈 문제 만들기</h1>
-    <button class="home-btn" onclick="location.href='index.html'" title="메인으로">🏠</button>
+    <h1>나눗셈 실생활 문제 만들기</h1>
   </header>
 
   <!-- API 상태 배너 -->
@@ -378,9 +463,21 @@
     <span>🔄 API 연결 확인 중...</span>
   </div>
 
+  <!-- 이름 입력 영역 -->
+  <section class="section">
+    <h2 class="section-title">이름을 입력하세요.</h2>
+    <input 
+      type="text" 
+      class="problem-textarea" 
+      id="nameInput" 
+      placeholder="이름을 입력해주세요"
+      style="min-height: 60px; padding: 1rem;"
+    />
+  </section>
+
   <!-- 문제 작성 영역 -->
   <section class="section">
-    <h2 class="section-title">나만의 나눗셈 문제를 만들어 봅시다.</h2>
+    <h2 class="section-title">나만의 나눗셈 실생활 문제를 만들어 봅시다.</h2>
     <textarea 
       class="problem-textarea" 
       id="problemTextarea" 
@@ -388,7 +485,6 @@
     ></textarea>
     <div class="button-group">
       <button class="btn btn-secondary" id="copyBtn">복사</button>
-      <button class="btn btn-primary" id="submitBtn">제출하기</button>
     </div>
   </section>
 
@@ -415,6 +511,21 @@
         />
         <button class="send-btn" id="sendBtn">전송</button>
       </div>
+    </div>
+  </section>
+
+  <!-- AI 피드백 후 문제 수정 영역 (대화 후 표시) -->
+  <section class="section" id="revisedSection" style="display: none;">
+    <h2 class="section-title">AI 선생님과 대화하고 나서 나의 문제를 수정해 봅시다.</h2>
+    <textarea 
+      class="problem-textarea" 
+      id="revisedProblemTextarea" 
+      placeholder="AI 선생님의 조언을 참고하여 문제를 수정해 주세요!"
+    ></textarea>
+    <div style="text-align: center; margin-top: 1rem;">
+      <button class="btn btn-primary" id="finalSubmitBtn" style="font-size: 1.1rem; padding: 0.875rem 2rem;">
+        선생님께 제출하기 📤
+      </button>
     </div>
   </section>
 </div>

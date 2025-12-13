@@ -1,22 +1,34 @@
-// ===== page3.js - 문장제 나눗셈 문제 만들기 =====
+// ===== page3.js - 나눗셈 실생활 문제 만들기 =====
 
 // API Key 가져오기 (Vite 환경변수)
 const API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
 
+// 구글 폼 설정
+const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSciLkhOFYYWxL3ecz6gMg1l3HRMrR3d_c9dJ8F4QGgXgei5bw/formResponse';
+const FORM_ENTRIES = {
+  name: 'entry.916021620',
+  chatHistory: 'entry.1208210550',
+  finalProblem: 'entry.2051329165'
+};
+
 // DOM 요소
 const statusBar = document.getElementById('statusBar');
+const nameInput = document.getElementById('nameInput');
 const problemTextarea = document.getElementById('problemTextarea');
 const copyBtn = document.getElementById('copyBtn');
-const submitBtn = document.getElementById('submitBtn');
 const chatLog = document.getElementById('chatLog');
 const chatInput = document.getElementById('chatInput');
 const sendBtn = document.getElementById('sendBtn');
+const revisedSection = document.getElementById('revisedSection');
+const revisedProblemTextarea = document.getElementById('revisedProblemTextarea');
+const finalSubmitBtn = document.getElementById('finalSubmitBtn');
 
 // 채팅 히스토리 (대화 맥락 유지용)
 let chatHistory = [];
+let hasConversation = false; // 대화 진행 여부
 
 // System Prompt (AI 튜터 역할 설정)
-const SYSTEM_PROMPT = `당신은 초등학교 3학년 수학 선생님입니다. 학생이 만든 나눗셈 문장제 문제를 보고 다음을 검토해주세요:
+const SYSTEM_PROMPT = `당신은 초등학교 3학년 수학 선생님입니다. 학생이 만든 나눗셈 실생활 문제를 보고 다음을 검토해주세요:
 1) 나눗셈 개념(똑같이 나누기 등)이 잘 들어갔는지
 2) 실생활 예시가 자연스러운지
 3) 숫자가 3학년 수준에 맞는지 (나누어지는 수는 100 이하, 나누는 수는 한 자리 수가 적절)
@@ -47,8 +59,8 @@ function setupEventListeners() {
   // 복사 버튼
   copyBtn.addEventListener('click', copyProblem);
   
-  // 제출 버튼
-  submitBtn.addEventListener('click', submitProblem);
+  // 최종 제출 버튼
+  finalSubmitBtn.addEventListener('click', submitProblem);
   
   // 전송 버튼
   sendBtn.addEventListener('click', sendMessage);
@@ -90,15 +102,98 @@ async function copyProblem() {
 }
 
 // ===== 문제 제출 =====
-function submitProblem() {
-  const text = problemTextarea.value.trim();
+async function submitProblem() {
+  const name = nameInput.value.trim();
+  const originalProblem = problemTextarea.value.trim();
+  const revisedProblem = revisedProblemTextarea.value.trim();
   
-  if (!text) {
-    alert('제출할 문제를 먼저 작성해주세요!');
+  if (!name) {
+    alert('이름을 먼저 입력해주세요!');
+    nameInput.focus();
     return;
   }
   
-  alert('문제가 제출되었습니다! 🎉\n(구글 폼 연동 예정)');
+  if (!originalProblem) {
+    alert('처음 만든 문제를 먼저 작성해주세요!');
+    return;
+  }
+  
+  if (!revisedProblem) {
+    alert('수정한 문제를 작성해주세요!');
+    revisedProblemTextarea.focus();
+    return;
+  }
+  
+  // 챗봇 대화 내역 포맷팅
+  const chatHistoryText = formatChatHistory();
+  
+  // 제출 확인
+  if (!confirm(`${name}님, 문제를 제출하시겠습니까?`)) {
+    return;
+  }
+  
+  // 버튼 비활성화
+  finalSubmitBtn.disabled = true;
+  finalSubmitBtn.textContent = '제출 중...';
+  
+  try {
+    // 구글 폼에 제출
+    const formData = new FormData();
+    formData.append(FORM_ENTRIES.name, name);
+    formData.append(FORM_ENTRIES.chatHistory, chatHistoryText);
+    formData.append(FORM_ENTRIES.finalProblem, revisedProblem);
+    
+    await fetch(GOOGLE_FORM_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      body: formData
+    });
+    
+    // 성공 메시지
+    alert(`${name}님의 문제가 제출되었습니다! 🎉\n\n수고하셨어요!`);
+    
+    // 폼 초기화
+    nameInput.value = '';
+    problemTextarea.value = '';
+    revisedProblemTextarea.value = '';
+    chatHistory = [];
+    hasConversation = false;
+    revisedSection.style.display = 'none';
+    
+    // 채팅 로그 초기화
+    chatLog.innerHTML = `
+      <div class="welcome-message">
+        <div class="emoji">👨‍🏫</div>
+        <p>안녕하세요! AI 선생님이에요.<br>제출하기 전 AI 선생님의 피드백을 받고 문제를 수정하여 제출하세요!</p>
+      </div>
+    `;
+    
+  } catch (error) {
+    console.error('제출 실패:', error);
+    alert('제출에 실패했습니다. 다시 시도해주세요.');
+  } finally {
+    // 버튼 활성화
+    finalSubmitBtn.disabled = false;
+    finalSubmitBtn.textContent = '선생님께 제출하기 📤';
+  }
+}
+
+// ===== 챗봇 대화 내역 포맷팅 =====
+function formatChatHistory() {
+  if (chatHistory.length === 0) {
+    return '(대화 없음)';
+  }
+  
+  let formatted = '';
+  chatHistory.forEach((msg, idx) => {
+    if (msg.role === 'user') {
+      formatted += `[학생]: ${msg.content}\n\n`;
+    } else if (msg.role === 'assistant') {
+      formatted += `[AI 선생님]: ${msg.content}\n\n`;
+    }
+  });
+  
+  return formatted.trim();
 }
 
 // ===== 메시지 전송 =====
@@ -152,6 +247,14 @@ async function sendMessage() {
     
     // 대화 히스토리에 AI 응답 추가
     chatHistory.push({ role: 'assistant', content: response });
+    
+    // 첫 대화 완료 시 수정 영역과 제출 버튼 표시
+    if (!hasConversation) {
+      hasConversation = true;
+      revisedSection.style.display = 'block';
+      // 처음 문제를 수정 영역에 복사
+      revisedProblemTextarea.value = problemTextarea.value;
+    }
     
   } catch (error) {
     console.error('API 호출 실패:', error);

@@ -216,53 +216,79 @@ const LongDivisionGrid = ({ dividend, divisor, steps, completedSteps }) => {
   // 몫의 각 자릿수
   const quotientDigits = steps.map((s) => s.qDigit);
   
-  // 세로셈 셀 스타일
-  const cellStyle = 'w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center text-lg sm:text-xl font-bold border border-slate-300 bg-white rounded-lg';
-  const emptyCellStyle = 'w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center text-lg sm:text-xl font-bold border border-dashed border-slate-300 bg-slate-50 rounded-lg';
-  const spacerStyle = 'w-10 h-10 sm:w-12 sm:h-12';
-  
-  // 숫자를 자릿수별로 분리 (예: 18 → ['1', '8'], 6 → ['', '6'] with width 2)
-  const getDigitAt = (num, totalWidth, position) => {
-    const str = String(num).padStart(totalWidth, ' ');
-    const char = str[position];
-    return char === ' ' ? '' : char;
+  // 단계별 색상 정의
+  const getStepColor = (stepIdx) => {
+    if (numDigits === 3) {
+      // 3자리: 0=백(초록), 1=십(파란), 2=일(빨간)
+      if (stepIdx === 0) return 'text-emerald-600';
+      if (stepIdx === 1) return 'text-blue-600';
+      if (stepIdx === 2) return 'text-red-600';
+    } else if (numDigits === 2) {
+      // 2자리: 0=십(초록), 1=일(파란)
+      if (stepIdx === 0) return 'text-emerald-600';
+      if (stepIdx === 1) return 'text-blue-600';
+    } else {
+      // 1자리: 0=일(초록)
+      return 'text-emerald-600';
+    }
+    return 'text-slate-900';
   };
   
+  // 현재 진행 중인 단계의 색상
+  const currentStepIdx = completedSteps > 0 ? completedSteps - 1 : -1;
+  const currentStepColor = currentStepIdx >= 0 ? getStepColor(currentStepIdx) : 'text-slate-900';
+  
+  // 세로셈 셀 스타일 - 점선으로 구분
+  const cellStyle = 'w-12 min-h-[3rem] sm:w-14 sm:min-h-[3.5rem] flex items-center justify-center text-lg sm:text-xl font-bold border-l border-dashed border-slate-300';
+  const emptyCellStyle = 'w-12 min-h-[3rem] sm:w-14 sm:min-h-[3.5rem] flex items-center justify-center text-lg sm:text-xl font-bold border-l border-dashed border-slate-200 text-slate-300';
+  const spacerStyle = 'w-12 sm:w-14';
+  const emptySpacerStyle = 'w-12 sm:w-14 border-l border-dashed border-slate-300';
+  
   return (
-    <div className="flex flex-col items-center gap-1">
+    <div className="flex flex-col items-start gap-0">
       {/* 몫 행 (맨 위) */}
-      <div className="flex items-center gap-1">
-        <div className={spacerStyle} /> {/* 나누는 수 자리 빈 공간 */}
-        <div className="w-4 sm:w-6" /> {/* 괄호 자리 빈 공간 */}
+      <div className="flex items-center">
+        <div className="w-12 sm:w-14 border-l border-dashed border-slate-300" /> {/* 나누는 수 자리 빈 공간 */}
+        <div className="w-6 sm:w-8" /> {/* 괄호 자리 빈 공간 */}
         {digits.map((_, idx) => (
           <div
             key={`q-${idx}`}
             className={completedSteps > idx ? cellStyle : emptyCellStyle}
           >
-            {completedSteps > idx ? quotientDigits[idx] : ''}
+            {completedSteps > idx && quotientDigits[idx] !== undefined ? String(quotientDigits[idx]) : ''}
           </div>
         ))}
       </div>
       
       {/* 나눗셈 기호와 나눠지는 수 행 */}
-      <div className="flex items-center gap-1">
-        {/* 나누는 수 */}
-        <div className={cellStyle}>
+      <div className="flex items-center">
+        {/* 나누는 수 (현재 단계 색상 적용, 점선 추가) */}
+        <div className={`w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center text-lg sm:text-xl font-bold border-l border-dashed border-slate-300 ${currentStepColor}`}>
           {divisor}
         </div>
-        {/* 괄호 기호 ) */}
-        <div className="w-4 sm:w-6 h-10 sm:h-12 flex items-center justify-center text-2xl sm:text-3xl font-bold text-slate-700">
+        {/* 괄호 기호 ) (위에 실선 추가) */}
+        <div className="w-6 sm:w-8 h-12 sm:h-14 flex items-center justify-center text-2xl sm:text-3xl font-bold text-slate-700 border-t-2 border-slate-700">
           )
         </div>
-        {/* 나눠지는 수 각 자릿수 */}
-        {digits.map((d, idx) => (
-          <div
-            key={`d-${idx}`}
-            className={`${cellStyle} border-t-2 border-t-slate-700`}
-          >
-            {d}
-          </div>
-        ))}
+        {/* 나눠지는 수 각 자릿수 (위에 실선) */}
+        {digits.map((d, idx) => {
+          // 백의 자리(첫 번째 자릿수)이고 완료된 단계가 있을 때만 색상 적용
+          const isFirstDigitWithProgress = idx === 0 && completedSteps > 0;
+          const digitColor = isFirstDigitWithProgress ? getStepColor(0) : 'text-slate-900';
+          
+          return (
+            <div
+              key={`d-${idx}`}
+              className={`w-12 min-h-[3rem] sm:w-14 sm:min-h-[3.5rem] flex items-center justify-center text-lg sm:text-xl font-bold border-l border-slate-300 border-t-2 border-slate-700 ${digitColor}`}
+              style={{ 
+                borderLeftStyle: 'dashed',
+                borderTopStyle: 'solid'
+              }}
+            >
+              {d}
+            </div>
+          );
+        })}
       </div>
       
       {/* 계산 과정 (각 단계별) */}
@@ -273,16 +299,12 @@ const LongDivisionGrid = ({ dividend, divisor, steps, completedSteps }) => {
         const productStr = String(step.product);
         const productLen = productStr.length;
         
-        // bringDown(이전 나머지 × 10 + 현재 자리)의 자릿수
-        const bringDownStr = String(step.bringDown);
-        const bringDownLen = bringDownStr.length;
-        
         return (
-          <div key={`step-${stepIdx}`} className="flex flex-col gap-1">
+          <div key={`step-${stepIdx}`} className="flex flex-col">
             {/* 빼는 수 (곱) - 자릿수별로 분리해서 표시 */}
-            <div className="flex items-center gap-1">
-              <div className={spacerStyle} />
-              <div className="w-4 sm:w-6" />
+            <div className="flex items-center">
+              <div className="w-12 sm:w-14 border-l border-dashed border-slate-300" />
+              <div className="w-6 sm:w-8" />
               {digits.map((_, idx) => {
                 // product가 시작되는 열 계산 (product 끝이 stepIdx 열에 맞춰짐)
                 const productStartCol = stepIdx - (productLen - 1);
@@ -291,32 +313,35 @@ const LongDivisionGrid = ({ dividend, divisor, steps, completedSteps }) => {
                 if (positionInProduct >= 0 && positionInProduct < productLen) {
                   const digitChar = productStr[positionInProduct];
                   return (
-                    <div key={`sub-${stepIdx}-${idx}`} className={`${cellStyle} bg-rose-50 border-rose-300`}>
+                    <div key={`sub-${stepIdx}-${idx}`} className={`${cellStyle}`}>
                       {digitChar}
                     </div>
                   );
                 }
-                return <div key={`sub-${stepIdx}-${idx}`} className={spacerStyle} />;
+                return <div key={`sub-${stepIdx}-${idx}`} className={emptySpacerStyle} />;
               })}
+              {/* 곱셈식 표시 */}
+              <div className="ml-3 text-xs sm:text-sm text-slate-600 whitespace-nowrap flex items-center">
+                ← {divisor} × {step.qDigit * Math.pow(10, numDigits - stepIdx - 1)}
+              </div>
             </div>
             
             {/* 빼기 선 */}
-            <div className="flex items-center gap-1">
-              <div className={spacerStyle} />
-              <div className="w-4 sm:w-6" />
+            <div className="flex items-center">
+              <div className="w-12 sm:w-14 border-l border-dashed border-slate-300" />
+              <div className="w-6 sm:w-8" />
               {digits.map((_, idx) => {
-                const productStartCol = stepIdx - (productLen - 1);
-                if (idx >= productStartCol && idx <= stepIdx) {
-                  return <div key={`line-${stepIdx}-${idx}`} className="w-10 sm:w-12 border-b-2 border-slate-700" />;
-                }
-                return <div key={`line-${stepIdx}-${idx}`} className={spacerStyle} />;
+                // 모든 자릿수에 빼기 선 표시
+                return (
+                  <div key={`line-${stepIdx}-${idx}`} className={`${emptySpacerStyle} border-b-2 border-dashed border-slate-400`} />
+                );
               })}
             </div>
             
             {/* 나머지 + 다음 자리 내림 */}
-            <div className="flex items-center gap-1">
-              <div className={spacerStyle} />
-              <div className="w-4 sm:w-6" />
+            <div className="flex items-center">
+              <div className="w-12 sm:w-14 border-l border-dashed border-slate-300" />
+              <div className="w-6 sm:w-8" />
               {digits.map((_, idx) => {
                 // 마지막 단계가 아니면 나머지 + 다음 자리 표시
                 if (stepIdx < steps.length - 1) {
@@ -331,11 +356,12 @@ const LongDivisionGrid = ({ dividend, divisor, steps, completedSteps }) => {
                   
                   if (posInBringDown >= 0 && posInBringDown < nextLen) {
                     const digitChar = nextBringDownStr[posInBringDown];
-                    // 첫 번째 자리는 나머지(하늘색), 마지막 자리는 내림(노란색)
-                    const isLastDigit = posInBringDown === nextLen - 1;
-                    const bgColor = isLastDigit ? 'bg-amber-50 border-amber-300' : 'bg-sky-50 border-sky-300';
+                    
+                    // 전체 숫자(나머지 + 내림)를 다음 단계 색상으로 적용
+                    const textColor = getStepColor(stepIdx + 1);
+                    
                     return (
-                      <div key={`rem-${stepIdx}-${idx}`} className={`${cellStyle} ${bgColor}`}>
+                      <div key={`rem-${stepIdx}-${idx}`} className={`${cellStyle} ${textColor} font-bold`}>
                         {digitChar}
                       </div>
                     );
@@ -350,13 +376,13 @@ const LongDivisionGrid = ({ dividend, divisor, steps, completedSteps }) => {
                   if (posInRem >= 0 && posInRem < remLen) {
                     const digitChar = remainderStr[posInRem];
                     return (
-                      <div key={`rem-${stepIdx}-${idx}`} className={`${cellStyle} bg-emerald-50 border-emerald-300`}>
+                      <div key={`rem-${stepIdx}-${idx}`} className={`${cellStyle}`}>
                         {digitChar}
                       </div>
                     );
                   }
                 }
-                return <div key={`rem-${stepIdx}-${idx}`} className={spacerStyle} />;
+                return <div key={`rem-${stepIdx}-${idx}`} className={emptySpacerStyle} />;
               })}
             </div>
           </div>
@@ -365,7 +391,7 @@ const LongDivisionGrid = ({ dividend, divisor, steps, completedSteps }) => {
       
       {/* 최종 나머지 (마지막 단계 완료 시) */}
       {completedSteps === steps.length && steps.length > 0 && (
-        <div className="mt-2 text-center">
+        <div className="mt-3 text-left pl-12 sm:pl-14">
           <span className="text-sm font-semibold text-slate-700">
             나머지: <span className="text-lg font-bold text-emerald-700">{steps[steps.length - 1].remainder}</span>
           </span>
@@ -487,16 +513,25 @@ const App = () => {
     return map;
   }, [currentBlocks, problem.divisor]);
 
-  const allPlaced = currentBlocks.length > 0 && currentBlocks.every((b) => b.containerId !== 'source');
   const perPlateCounts = Array.from({ length: problem.divisor }, (_, i) => {
     const items = byContainer.get(`plate-${i}`) ?? [];
     const total = items.reduce((sum, b) => sum + getBlockValue(b.type), 0);
     return { items, total };
   });
+  
+  // source에 남아있는 블록의 총합 계산
+  const sourceItems = byContainer.get('source') ?? [];
+  const sourceTotal = sourceItems.reduce((sum, b) => sum + getBlockValue(b.type), 0);
+  
+  // 나머지 계산
+  const remainder = problem.dividend - (quotient * problem.divisor);
+  
+  // 완료 조건: 모든 접시에 몫만큼 똑같이 나누어지고, source에는 나머지만 남아있는지 확인
   const everySameAndCorrect =
     perPlateCounts.every((p) => p.total === quotient) &&
     perPlateCounts.length > 0 &&
-    allPlaced;
+    sourceTotal === remainder &&
+    sourceTotal < problem.divisor;
 
   const handleBlockClick = (blockId) => {
     if (toolMode !== 'hammer') return;
@@ -587,14 +622,33 @@ const App = () => {
   // 자릿수별 완료 체크
   const equalShareForType = (type) => {
     const total = currentBlocks.filter((b) => b.type === type).length;
+    
+    // 해당 타입의 블록이 없으면 해당 자리 계산이 완료된 것으로 처리
     if (total === 0) return true;
+    
     const inSource = currentBlocks.filter((b) => b.type === type && b.containerId === 'source').length;
-    if (inSource > 0) return false;
+    const inPlates = total - inSource;
+    
+    // 접시에 있는 블록이 없으면 아직 시작 안 함
+    if (inPlates === 0) return false;
+    
+    // 각 접시의 개수 확인
     const counts = Array.from({ length: problem.divisor }, (_, i) => {
       const items = byContainer.get(`plate-${i}`) ?? [];
       return items.filter((b) => b.type === type).length;
     });
-    return counts.every((c) => c === counts[0]);
+    
+    // 모든 접시에 똑같이 나누어져 있는지 확인
+    const allEqual = counts.every((c) => c === counts[0]);
+    if (!allEqual) return false;
+    
+    // 백 모형, 십 모형: source에 하나도 남으면 안 됨 (쪼개야 함)
+    if (type === 'hundred' || type === 'ten') {
+      return inSource === 0;
+    }
+    
+    // 일 모형: source에 나머지가 나누는 수보다 적으면 완료
+    return inSource < problem.divisor;
   };
 
   const hundredsDone = equalShareForType('hundred');
@@ -722,19 +776,44 @@ const App = () => {
         setCursorPos({ x: e.clientX, y: e.clientY });
       }}
     >
+      {/* 네비게이션 바 */}
+      <nav className="bg-white border-b-2 border-pastelBlue/60 px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
+        <a 
+          href="/index.html" 
+          className="flex items-center gap-2 text-base sm:text-lg font-bold text-slate-800 hover:text-pastelBlue transition-colors"
+        >
+          <span className="w-10 h-10 bg-pastelBlue rounded-full flex items-center justify-center text-xl border-2 border-sky-400 shadow-md hover:scale-110 hover:bg-sky-300 transition-all">
+            🏠
+          </span>
+          <span>나눗셈 탐험대</span>
+        </a>
+        <div className="flex gap-2 flex-wrap">
+          <a 
+            href="/page1.html" 
+            className="px-3 py-2 bg-pastelBlue border-2 border-sky-400 rounded-full text-xs sm:text-sm font-semibold text-slate-800 shadow-md transition-all hover:scale-105 whitespace-nowrap"
+          >
+            1단계: 수모형 탐구
+          </a>
+          <a 
+            href="/page2.html" 
+            className="px-3 py-2 bg-pastelBlue/20 border-2 border-transparent rounded-full text-xs sm:text-sm font-semibold text-slate-800 transition-all hover:bg-pastelBlue/40 hover:scale-105 whitespace-nowrap"
+          >
+            2단계: 실생활 문제
+          </a>
+          <a 
+            href="/page3.html" 
+            className="px-3 py-2 bg-pastelBlue/20 border-2 border-transparent rounded-full text-xs sm:text-sm font-semibold text-slate-800 transition-all hover:bg-pastelBlue/40 hover:scale-105 whitespace-nowrap"
+          >
+            3단계: 문제 만들기
+          </a>
+        </div>
+      </nav>
+
       {/* 헤더 */}
       <div className="bg-gradient-to-r from-pastelBlue via-pastelPurple to-pastelPink px-5 py-4 sm:px-8 sm:py-5 text-center relative">
         <h1 className="text-xl sm:text-2xl font-extrabold text-slate-800" style={{ textShadow: '1px 1px 2px rgba(255, 255, 255, 0.5)' }}>
           수모형 조작하며 탐구하기
         </h1>
-        {/* 홈 버튼 */}
-        <a
-          href="/index.html"
-          className="absolute top-1/2 right-3 sm:right-4 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 bg-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform border-2 border-white/50"
-          title="메인으로"
-        >
-          <span className="text-xl sm:text-2xl">🏠</span>
-        </a>
       </div>
 
       {/* 상단: 문제 제시 + 식 입력 */}
@@ -745,7 +824,7 @@ const App = () => {
               오늘의 나눗셈 활동
             </p>
             <p className="mt-1 text-sm sm:text-lg font-semibold text-sky-950">
-              선생님이 들려주는 서술형(문장제) 문제를 잘 듣고, 알맞은 나눗셈 식을 아래 빈 칸에 세워 보세요.
+              선생님이 들려주는 실생활 문제를 잘 듣고, 알맞은 나눗셈 식을 아래 빈 칸에 세워 보세요.
             </p>
             <p className="mt-1 text-[11px] sm:text-xs text-sky-900/80">
               선생님이 예: "사탕 68개를 2명의 친구에게 똑같이 나누어 주려고 합니다." 와 같이 문제를 말해 주실 거예요.
@@ -854,6 +933,17 @@ const App = () => {
               <p className="text-sm sm:text-base font-semibold text-slate-800">
                 3단계. 수모형을 끌어서 아래 접시에 똑같이 나누어 담아 보세요.
               </p>
+              
+              {/* 문제 다시 보기 */}
+              <div className="rounded-xl bg-sky-50/80 border-2 border-sky-200 px-4 py-3 flex items-center gap-2 sm:gap-3">
+                <span className="text-xs sm:text-sm font-semibold text-sky-800">문제:</span>
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <span className="text-xl sm:text-2xl font-bold text-slate-900">{equationDividend}</span>
+                  <span className="text-lg sm:text-xl font-bold text-sky-700">÷</span>
+                  <span className="text-xl sm:text-2xl font-bold text-slate-900">{equationDivisor}</span>
+                  <span className="text-lg sm:text-xl font-bold text-sky-700">= ?</span>
+                </div>
+              </div>
 
               {canShowStep3 ? (
                 <>
@@ -869,11 +959,24 @@ const App = () => {
                           </p>
                           <p className="text-sm sm:text-base text-slate-800">
                             모든 접시에 <span className="font-bold">{quotient}</span>씩 똑같이 나누어 담았어요.
-                            그래서{' '}
-                            <span className="font-bold">
-                              {problem.dividend} ÷ {problem.divisor} = {quotient}
-                            </span>{' '}
-                            입니다.
+                            {remainder > 0 ? (
+                              <>
+                                {' '}그리고 나머지는 <span className="font-bold text-amber-600">{remainder}</span>개예요.
+                                {' '}그래서{' '}
+                                <span className="font-bold">
+                                  {problem.dividend} ÷ {problem.divisor} = {quotient} 나머지 {remainder}
+                                </span>{' '}
+                                입니다.
+                              </>
+                            ) : (
+                              <>
+                                {' '}그래서{' '}
+                                <span className="font-bold">
+                                  {problem.dividend} ÷ {problem.divisor} = {quotient}
+                                </span>{' '}
+                                입니다.
+                              </>
+                            )}
                           </p>
                           <button
                             type="button"
@@ -883,14 +986,22 @@ const App = () => {
                             4단계로 가기 →
                           </button>
                         </>
-                      ) : allPlaced ? (
-                        <p className="text-sm sm:text-base text-amber-800">
-                          블록은 모두 접시에 들어갔지만, 아직 똑같이 나누어지지 않았어요. 각 접시의 합계를 다시 비교해 볼까요?
-                        </p>
                       ) : (
-                        <p className="text-sm sm:text-base text-slate-800">
-                          모든 블록을 아래 접시에 옮긴 뒤, 각 접시에 들어간 수가 똑같은지 살펴보세요.
-                        </p>
+                        <>
+                          {perPlateCounts.every((p) => p.total === quotient) && perPlateCounts.length > 0 ? (
+                            <p className="text-sm sm:text-base text-amber-800">
+                              접시에는 똑같이 나누어졌어요! {remainder > 0 && `하지만 수모형 상자에 나머지 ${remainder}개가 정확히 남아있는지 확인해 보세요.`}
+                            </p>
+                          ) : sourceTotal === remainder && sourceTotal < problem.divisor ? (
+                            <p className="text-sm sm:text-base text-amber-800">
+                              나머지는 잘 남겨두었어요! 이제 각 접시에 {quotient}씩 똑같이 나누어 담아 보세요.
+                            </p>
+                          ) : (
+                            <p className="text-sm sm:text-base text-slate-800">
+                              수모형을 접시에 똑같이 나누어 담아 보세요. {remainder > 0 && `나누어 떨어지지 않으면 나머지를 수모형 상자에 남겨두세요.`}
+                            </p>
+                          )}
+                        </>
                       )}
                     </div>
                   </DndContext>
@@ -926,17 +1037,21 @@ const App = () => {
                 </div>
 
                 {/* 오른쪽: 세로셈 표 형식 */}
-                <div className="w-full lg:w-auto rounded-2xl border-2 border-pastelBlue bg-white/90 px-4 py-3 sm:px-5 sm:py-4 flex flex-col gap-3">
+                <div className="w-full lg:min-w-[400px] lg:w-auto flex-shrink-0 rounded-2xl border-2 border-pastelBlue bg-white/90 px-4 py-3 sm:px-5 sm:py-4 flex flex-col gap-3 max-w-full">
                   <p className="text-xs sm:text-sm font-semibold text-slate-800 mb-2">
                     세로셈
                   </p>
                   
-                  <LongDivisionGrid
-                    dividend={problem.dividend}
-                    divisor={problem.divisor}
-                    steps={divisionSteps}
-                    completedSteps={completedSteps}
-                  />
+                  <div className="overflow-x-auto -mx-4 px-4 sm:-mx-5 sm:px-5">
+                    <div style={{ minWidth: 'max-content' }}>
+                      <LongDivisionGrid
+                        dividend={problem.dividend}
+                        divisor={problem.divisor}
+                        steps={divisionSteps}
+                        completedSteps={completedSteps}
+                      />
+                    </div>
+                  </div>
 
                   {/* 완료 피드백 */}
                   {everySameAndCorrect && (
