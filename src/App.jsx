@@ -890,7 +890,7 @@ const App = () => {
           <span className="w-10 h-10 bg-pastelBlue rounded-full flex items-center justify-center text-xl border-2 border-sky-400 shadow-md hover:scale-110 hover:bg-sky-300 transition-all">
             🏠
           </span>
-          <img src="/image/head.png" alt="나눗셈 탐험대" className="h-12 object-contain" />
+          <img src="./image/head.png" alt="나눗셈 탐험대" className="h-[50px] object-contain" />
         </a>
         <div className="flex gap-2 flex-wrap">
           <a 
