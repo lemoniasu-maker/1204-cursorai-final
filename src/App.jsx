@@ -890,7 +890,7 @@ const App = () => {
           <span className="w-10 h-10 bg-pastelBlue rounded-full flex items-center justify-center text-xl border-2 border-sky-400 shadow-md hover:scale-110 hover:bg-sky-300 transition-all">
             🏠
           </span>
-          <span>나눗셈 탐험대</span>
+          <img src="/image/head.png" alt="나눗셈 탐험대" className="h-12 object-contain" />
         </a>
         <div className="flex gap-2 flex-wrap">
           <a 
@@ -916,7 +916,7 @@ const App = () => {
 
       {/* 헤더 */}
       <div className="bg-gradient-to-r from-pastelBlue via-pastelPurple to-pastelPink px-5 py-4 sm:px-8 sm:py-5 text-center relative">
-        <h1 className="text-xl sm:text-2xl font-extrabold text-slate-800" style={{ textShadow: '1px 1px 2px rgba(255, 255, 255, 0.5)' }}>
+        <h1 className="text-[1.4rem] sm:text-[1.75rem] font-extrabold text-slate-800" style={{ textShadow: '1px 1px 2px rgba(255, 255, 255, 0.5)' }}>
           수모형으로 활동하며 탐구하기
         </h1>
       </div>
