@@ -1,5 +1,8 @@
 // ===== page2.js - 실생활 문제 풀이 =====
 
+// Sweetalert2 import
+import Swal from 'sweetalert2';
+
 // API Key 가져오기 (Vite 환경변수)
 const API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
 
@@ -9,6 +12,8 @@ let currentProblem = null;     // 현재 문제 데이터 { question, answer, hi
 let isDrawing = false;
 let currentTool = 'pencil';    // 'pencil' | 'eraser'
 let currentColor = '#000000';
+let pencilWidth = 3;           // 펜 굵기 (기본: 보통)
+let eraserWidth = 20;          // 지우개 굵기 (기본: 보통)
 
 // ===== 레벨별 설정 =====
 const LEVEL_CONFIG = [
@@ -145,12 +150,40 @@ function setupEventListeners() {
     document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
     document.getElementById('pencilBtn').classList.add('active');
   });
+
+  // 펜 굵기 슬라이더
+  const pencilSlider = document.getElementById('pencilSlider');
+  const pencilValue = document.getElementById('pencilValue');
+  pencilSlider.addEventListener('input', function() {
+    pencilWidth = parseInt(this.value);
+    pencilValue.textContent = pencilWidth;
+    currentTool = 'pencil';
+    document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('pencilBtn').classList.add('active');
+  });
+
+  // 지우개 굵기 슬라이더
+  const eraserSlider = document.getElementById('eraserSlider');
+  const eraserValue = document.getElementById('eraserValue');
+  eraserSlider.addEventListener('input', function() {
+    eraserWidth = parseInt(this.value);
+    eraserValue.textContent = eraserWidth;
+    currentTool = 'eraser';
+    document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('eraserBtn').classList.add('active');
+  });
 }
 
 // ===== 문제 생성 함수 (메인) =====
 window.generateNewProblem = async function() {
   if (currentLevel < 0) {
-    alert('먼저 공부할 유형을 선택해 주세요!');
+    Swal.fire({
+      icon: 'warning',
+      title: '유형을 선택해주세요',
+      text: '먼저 공부할 유형을 선택해 주세요!',
+      confirmButtonText: '확인',
+      confirmButtonColor: '#4CAF50'
+    });
     return;
   }
 
@@ -404,7 +437,13 @@ async function getAIErrorFeedback(problem, userQuotient, userRemainder) {
 // ===== 정답 확인 =====
 async function checkAnswer() {
   if (!currentProblem) {
-    alert('먼저 문제를 생성해 주세요!');
+    Swal.fire({
+      icon: 'info',
+      title: '문제를 먼저 생성해주세요',
+      text: '먼저 문제를 생성해 주세요!',
+      confirmButtonText: '확인',
+      confirmButtonColor: '#4CAF50'
+    });
     return;
   }
 
@@ -414,7 +453,13 @@ async function checkAnswer() {
   const feedbackBox = document.getElementById('feedbackBox');
 
   if (isNaN(userQuotient)) {
-    alert('몫을 입력해 주세요!');
+    Swal.fire({
+      icon: 'warning',
+      title: '몫을 입력해주세요',
+      text: '몫을 입력해 주세요!',
+      confirmButtonText: '확인',
+      confirmButtonColor: '#4CAF50'
+    });
     return;
   }
 
@@ -552,12 +597,12 @@ function draw(e) {
   
   if (currentTool === 'pencil') {
     ctx.strokeStyle = currentColor;
-    ctx.lineWidth = 3;
+    ctx.lineWidth = pencilWidth;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
   } else {
     ctx.strokeStyle = 'white';
-    ctx.lineWidth = 20;
+    ctx.lineWidth = eraserWidth;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
   }

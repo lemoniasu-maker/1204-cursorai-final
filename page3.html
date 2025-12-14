@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>나눗셈 실생활 문제 만들기 - 나눗셈 탐험대</title>
   <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="stylesheet" href="/fonts/stylesheet.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
@@ -28,7 +29,7 @@
     }
 
     body {
-      font-family: 'Jua', sans-serif;
+      font-family: 'HakgyoansimBoadmarker', 'Jua', sans-serif;
       font-size: 18px;
       min-height: 100vh;
       background-image: url('./image/Gemini_Generated_Image_r5nlnur5nlnur5nl.png');
@@ -365,6 +366,24 @@
       background: rgba(248, 250, 252, 0.8);
     }
 
+    .paste-btn {
+      padding: 0.75rem 1rem;
+      background: var(--pastel-yellow);
+      border: 2px solid #ffd966;
+      border-radius: 24px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-dark);
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .paste-btn:hover {
+      background: #ffd966;
+      transform: scale(1.05);
+    }
+
     .chat-input {
       flex: 1;
       padding: 0.75rem 1rem;
@@ -455,6 +474,15 @@
       .btn {
         width: 100%;
       }
+
+      .chat-input-area {
+        flex-wrap: wrap;
+      }
+
+      .paste-btn {
+        font-size: 0.85rem;
+        padding: 0.625rem 0.875rem;
+      }
     }
   </style>
 </head>
@@ -522,11 +550,12 @@
           <div class="emoji">👨‍🏫</div>
           <p>안녕하세요! AI 선생님이에요.<br>제출하기 전 AI 선생님의 피드백을 받고 문제를 수정하여 제출하세요!</p>
           <div class="instruction">
-            💡 <strong>팁:</strong> 위에서 <strong>복사 버튼</strong>을 클릭한 후, 아래 채팅창에 붙여넣기(<strong>Ctrl+V</strong>)하여 "이 문제가 괜찮을까요?"라고 물어보세요!
+            💡 <strong>팁:</strong> 아래 채팅창에 <strong>붙여넣기 버튼</strong>을 클릭하여 "이 문제가 괜찮을까요?"라고 물어보세요!
           </div>
         </div>
       </div>
       <div class="chat-input-area">
+        <button class="paste-btn" id="pasteBtn" title="위에서 작성한 문제를 붙여넣기">📋 붙여넣기</button>
         <input 
           type="text" 
           class="chat-input" 

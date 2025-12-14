@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>실생활 문제 풀이 - 나눗셈 탐험대</title>
   <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="stylesheet" href="/fonts/stylesheet.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
@@ -28,7 +29,7 @@
     }
 
     body {
-      font-family: 'Jua', sans-serif;
+      font-family: 'HakgyoansimBoadmarker', 'Jua', sans-serif;
       font-size: 18px;
       min-height: 100vh;
       background-image: url('./image/Gemini_Generated_Image_xemqeoxemqeoxemq.png');
@@ -384,6 +385,76 @@
       background: #7ab3ff;
     }
 
+    /* ===== 굵기 선택 슬라이더 ===== */
+    .width-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 0.75rem;
+      background: white;
+      border-radius: 12px;
+      border: 2px solid #e2e8f0;
+    }
+
+    .width-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-medium);
+      white-space: nowrap;
+    }
+
+    .width-slider {
+      width: 80px;
+      height: 6px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: linear-gradient(to right, #e2e8f0, var(--pastel-blue));
+      border-radius: 3px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .width-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      background: var(--pastel-blue);
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      transition: all 0.2s;
+    }
+
+    .width-slider::-webkit-slider-thumb:hover {
+      background: #7ab3ff;
+      transform: scale(1.2);
+    }
+
+    .width-slider::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      background: var(--pastel-blue);
+      border-radius: 50%;
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      transition: all 0.2s;
+    }
+
+    .width-slider::-moz-range-thumb:hover {
+      background: #7ab3ff;
+      transform: scale(1.2);
+    }
+
+    .width-value {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-dark);
+      min-width: 24px;
+      text-align: center;
+    }
+
     /* ===== 정답 입력 ===== */
     .answer-row {
       display: flex;
@@ -522,6 +593,25 @@
       .answer-input {
         max-width: none;
       }
+
+      .canvas-tools {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+
+      .width-group {
+        padding: 0.375rem 0.5rem;
+      }
+
+      .width-label {
+        font-size: 0.65rem;
+      }
+
+      .width-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 0.7rem;
+      }
     }
   </style>
 </head>
@@ -581,7 +671,17 @@
       <canvas id="drawingCanvas"></canvas>
       <div class="canvas-tools">
         <button class="tool-btn active" id="pencilBtn" title="연필">✏️</button>
-        <button class="tool-btn" id="eraserBtn" title="지우개">🧽</button>
+        <div class="width-group">
+          <span class="width-label">펜</span>
+          <input type="range" class="width-slider" id="pencilSlider" min="1" max="10" value="3">
+          <span class="width-value" id="pencilValue">3</span>
+        </div>
+        <button class="tool-btn" id="eraserBtn" title="지우개">⬜</button>
+        <div class="width-group">
+          <span class="width-label">지우개</span>
+          <input type="range" class="width-slider" id="eraserSlider" min="10" max="50" value="20">
+          <span class="width-value" id="eraserValue">20</span>
+        </div>
         <input type="color" class="color-picker" id="colorPicker" value="#000000" title="색상 선택">
         <button class="reset-btn" onclick="clearCanvas()">초기화</button>
       </div>

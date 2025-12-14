@@ -132,15 +132,18 @@ const Block = ({ id, type, onClick, isHammerMode }) => {
     transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
   };
 
-  const base =
-    'flex items-center justify-center rounded-full transition-transform shadow-md select-none';
+  // 이미지 경로와 크기 설정
+  const getBlockConfig = () => {
+    if (type === 'hundred') {
+      return { src: '/image/hundred.png', size: 'w-14 h-14 sm:w-16 sm:h-16', label: '100' };
+    }
+    if (type === 'ten') {
+      return { src: '/image/ten.png', size: 'w-11 h-11 sm:w-12 sm:h-12', label: '10' };
+    }
+    return { src: '/image/one.png', size: 'w-8 h-8 sm:w-9 sm:h-9', label: '1' };
+  };
 
-  const hundredStyle =
-    'w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-emerald-200 via-emerald-300 to-emerald-400 border-2 border-emerald-500 text-base sm:text-lg font-extrabold text-emerald-900 shadow-[2px_4px_0_rgba(16,185,129,0.5)]';
-  const tenStyle =
-    'w-11 h-11 sm:w-12 sm:h-12 bg-gradient-to-br from-sky-200 via-sky-300 to-sky-400 border-2 border-sky-500 text-sm sm:text-base font-extrabold text-sky-900 shadow-[2px_4px_0_rgba(59,130,246,0.5)]';
-  const oneStyle =
-    'w-8 h-8 sm:w-9 sm:h-9 bg-gradient-to-br from-purple-200 via-purple-300 to-purple-400 border-2 border-purple-500 text-xs sm:text-sm font-bold text-purple-900 shadow-[1px_2px_0_rgba(147,51,234,0.5)]';
+  const config = getBlockConfig();
 
   const handleClick = () => {
     if (onClick) onClick(id);
@@ -153,13 +156,16 @@ const Block = ({ id, type, onClick, isHammerMode }) => {
       {...(isHammerMode ? {} : listeners)}
       {...attributes}
       onClick={handleClick}
-      className={`${base} ${
-        type === 'hundred' ? hundredStyle : type === 'ten' ? tenStyle : oneStyle
-      } ${
-        isDragging ? 'scale-110 ring-2 ring-offset-2 ring-sky-400 z-10' : ''
+      className={`relative transition-transform select-none ${config.size} ${
+        isDragging ? 'scale-110 ring-4 ring-offset-2 ring-sky-400 z-10 drop-shadow-lg' : 'drop-shadow-md'
       }`}
     >
-      {type === 'hundred' ? '100' : type === 'ten' ? '10' : '1'}
+      <img 
+        src={config.src} 
+        alt={`${config.label} 모형`}
+        className="w-full h-full object-contain pointer-events-none"
+        draggable="false"
+      />
     </div>
   );
 };
@@ -215,15 +221,15 @@ const SourceArea = ({ blocks, onBlockClick, isHammerMode }) => {
       </div>
       <div className="mt-1 flex gap-4 text-xs sm:text-sm text-slate-700">
         <div className="flex items-center gap-1">
-          <div className="w-5 h-5 rounded-full bg-emerald-300 border border-emerald-500" />
+          <img src="/image/hundred.png" alt="백 모형" className="w-5 h-5 object-contain" />
           <span>백 모형 (100)</span>
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-4 h-4 rounded-full bg-sky-300 border border-sky-500" />
+          <img src="/image/ten.png" alt="십 모형" className="w-4 h-4 object-contain" />
           <span>십 모형 (10)</span>
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded-full bg-purple-300 border border-purple-500" />
+          <img src="/image/one.png" alt="일 모형" className="w-3 h-3 object-contain" />
           <span>일 모형 (1)</span>
         </div>
       </div>
@@ -432,11 +438,16 @@ const App = () => {
   const [estimateSubmitted, setEstimateSubmitted] = useState(false);
   const [toolMode, setToolMode] = useState('none');
   const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
+  const [batchCount, setBatchCount] = useState(1); // 일괄 이동 개수 (기본 1개)
 
   const [blocks3, setBlocks3] = useState([]);
   const [blocks4, setBlocks4] = useState([]);
   const [step3Completed, setStep3Completed] = useState(false);
   const [step4Started, setStep4Started] = useState(false);
+  
+  // 히스토리 관리 (실행 취소용)
+  const [history3, setHistory3] = useState([]);
+  const [history4, setHistory4] = useState([]);
 
   // AI 피드백 관련 상태
   const [aiFeedback, setAiFeedback] = useState('');
@@ -468,13 +479,16 @@ const App = () => {
 
   useMemo(() => {
     if (hasEquation) {
-      setBlocks3(createBlocks(dividendNum));
+      const initialBlocks = createBlocks(dividendNum);
+      setBlocks3(initialBlocks);
+      setHistory3([]); // 히스토리 초기화
       setEstimate('');
       setEstimateError('');
       setEstimateSubmitted(false);
       setStep3Completed(false);
       setStep4Started(false);
       setBlocks4([]);
+      setHistory4([]); // 히스토리 초기화
       setToolMode('none');
       setAiFeedback('');
       setAiFeedbackLoading(false);
@@ -510,6 +524,8 @@ const App = () => {
 
   const currentBlocks = step4Started ? blocks4 : blocks3;
   const setCurrentBlocks = step4Started ? setBlocks4 : setBlocks3;
+  const currentHistory = step4Started ? history4 : history3;
+  const setCurrentHistory = step4Started ? setHistory4 : setHistory3;
 
   const handleDragEnd = (event) => {
     const { active, over } = event;
@@ -519,9 +535,38 @@ const App = () => {
     const droppableIds = ['source', ...Array.from({ length: problem.divisor }, (_, i) => `plate-${i}`)];
     if (!droppableIds.includes(overId)) return;
 
-    setCurrentBlocks((prev) =>
-      prev.map((b) => (b.id === active.id ? { ...b, containerId: overId } : b))
+    // 현재 상태를 히스토리에 저장 (최대 20개까지만 유지)
+    setCurrentHistory(prev => [...prev.slice(-19), currentBlocks]);
+
+    // batchCount가 1이면 기존 동작 (1개만 이동)
+    if (batchCount === 1) {
+      setCurrentBlocks((prev) =>
+        prev.map((b) => (b.id === active.id ? { ...b, containerId: overId } : b))
+      );
+      return;
+    }
+
+    // batchCount가 2 이상이면 일괄 이동
+    const draggedBlock = currentBlocks.find(b => b.id === active.id);
+    if (!draggedBlock) return;
+    
+    // 같은 타입 + 같은 컨테이너에 있는 블록들 찾기
+    const sameTypeBlocks = currentBlocks.filter(
+      b => b.type === draggedBlock.type && 
+           b.containerId === draggedBlock.containerId &&
+           b.id !== active.id
     );
+    
+    // batchCount - 1개 추가 선택 (드래그한 것 포함 총 batchCount개)
+    const additionalBlocks = sameTypeBlocks.slice(0, batchCount - 1);
+    
+    // 모두 이동
+    setCurrentBlocks((prev) => prev.map((b) => {
+      if (b.id === active.id || additionalBlocks.find(block => block.id === b.id)) {
+        return { ...b, containerId: overId };
+      }
+      return b;
+    }));
   };
 
   const byContainer = useMemo(() => {
@@ -559,6 +604,9 @@ const App = () => {
   const handleBlockClick = (blockId) => {
     if (toolMode !== 'hammer') return;
 
+    // 히스토리 저장
+    setCurrentHistory(prev => [...prev.slice(-19), currentBlocks]);
+
     setCurrentBlocks((prev) => {
       const target = prev.find((b) => b.id === blockId);
       if (!target) return prev;
@@ -585,6 +633,9 @@ const App = () => {
   };
 
   const handleMergeAll = () => {
+    // 히스토리 저장
+    setCurrentHistory(prev => [...prev.slice(-19), currentBlocks]);
+
     const containers = ['source', ...Array.from({ length: problem.divisor }, (_, i) => `plate-${i}`)];
     const nextBlocks = [];
 
@@ -618,18 +669,30 @@ const App = () => {
   };
 
   const resetBlocksToStart = () => {
+    // 히스토리 저장
+    setCurrentHistory(prev => [...prev.slice(-19), currentBlocks]);
+    
     setCurrentBlocks(createBlocks(problem.dividend));
     setToolMode('none');
   };
 
-  const moveAllBackToSource = () => {
-    setCurrentBlocks((prev) => prev.map((b) => ({ ...b, containerId: 'source' })));
+  const undoLastMove = () => {
+    if (currentHistory.length === 0) return;
+    
+    // 마지막 상태로 복원
+    const previousState = currentHistory[currentHistory.length - 1];
+    setCurrentBlocks(previousState);
+    
+    // 히스토리에서 마지막 항목 제거
+    setCurrentHistory(prev => prev.slice(0, -1));
   };
 
   const handleStartStep4 = () => {
     setStep3Completed(true);
     setStep4Started(true);
-    setBlocks4(createBlocks(problem.dividend));
+    const initialBlocks = createBlocks(problem.dividend);
+    setBlocks4(initialBlocks);
+    setHistory4([]); // 4단계 히스토리 초기화
     setToolMode('none');
   };
 
@@ -731,12 +794,31 @@ const App = () => {
       </button>
       <button
         type="button"
-        onClick={moveAllBackToSource}
-        className="flex items-center gap-1 px-3 py-1 rounded-full border bg-white border-slate-300 hover:bg-slate-50 text-xs sm:text-sm font-semibold"
+        onClick={undoLastMove}
+        disabled={currentHistory.length === 0}
+        className={`flex items-center gap-1 px-3 py-1 rounded-full border text-xs sm:text-sm font-semibold ${
+          currentHistory.length === 0
+            ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed'
+            : 'bg-white border-slate-300 hover:bg-slate-50'
+        }`}
       >
-        <span>📦</span>
-        <span>상자로 되돌리기</span>
+        <span>↶</span>
+        <span>되돌리기</span>
       </button>
+      
+      {/* 일괄 이동 입력창 */}
+      <div className="flex items-center gap-2 ml-2 pl-2 sm:ml-4 sm:pl-4 border-l-2 border-slate-300">
+        <input 
+          type="number"
+          value={batchCount}
+          onChange={(e) => setBatchCount(Math.max(1, Number(e.target.value) || 1))}
+          min="1"
+          max="100"
+          className="w-12 sm:w-14 px-2 py-1 border-2 border-sky-300 rounded-lg text-center font-bold text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-400"
+        />
+        <span className="font-semibold text-slate-700 whitespace-nowrap">개씩 이동</span>
+      </div>
+      
       <span className="ml-auto text-[11px] sm:text-xs text-slate-500">
         망치 모드에서는 100·10 모형을 클릭해서 더 작은 모형으로 쪼갤 수 있어요.
       </span>

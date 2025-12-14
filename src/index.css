@@ -1,3 +1,4 @@
+@import url('/fonts/stylesheet.css');
 @import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
 
 @tailwind base;
@@ -10,7 +11,7 @@ body {
   display: flex;
   align-items: stretch;
   justify-content: center;
-  font-family: 'Jua', sans-serif;
+  font-family: 'HakgyoansimBoadmarker', 'Jua', sans-serif;
   font-size: 18px;
   /* 배경 이미지는 page1.html에서 설정됨 */
 }

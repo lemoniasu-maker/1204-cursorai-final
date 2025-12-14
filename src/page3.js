@@ -1,5 +1,8 @@
 // ===== page3.js - 나눗셈 실생활 문제 만들기 =====
 
+// Sweetalert2 import
+import Swal from 'sweetalert2';
+
 // API Key 가져오기 (Vite 환경변수)
 const API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
 
@@ -18,6 +21,7 @@ const problemTextarea = document.getElementById('problemTextarea');
 const copyBtn = document.getElementById('copyBtn');
 const chatLog = document.getElementById('chatLog');
 const chatInput = document.getElementById('chatInput');
+const pasteBtn = document.getElementById('pasteBtn');
 const sendBtn = document.getElementById('sendBtn');
 const revisedSection = document.getElementById('revisedSection');
 const revisedProblemTextarea = document.getElementById('revisedProblemTextarea');
@@ -84,6 +88,9 @@ function setupEventListeners() {
   // 복사 버튼
   copyBtn.addEventListener('click', copyProblem);
   
+  // 붙여넣기 버튼
+  pasteBtn.addEventListener('click', pasteProblem);
+  
   // 최종 제출 버튼
   finalSubmitBtn.addEventListener('click', submitProblem);
   
@@ -104,7 +111,13 @@ async function copyProblem() {
   const text = problemTextarea.value.trim();
   
   if (!text) {
-    alert('복사할 문제를 먼저 작성해주세요!');
+    Swal.fire({
+      icon: 'warning',
+      title: '문제를 먼저 작성해주세요',
+      text: '복사할 문제를 먼저 작성해주세요!',
+      confirmButtonText: '확인',
+      confirmButtonColor: '#4CAF50'
+    });
     return;
   }
   
@@ -122,8 +135,44 @@ async function copyProblem() {
     }, 1500);
   } catch (err) {
     console.error('복사 실패:', err);
-    alert('복사에 실패했습니다. 직접 선택하여 복사해주세요.');
+    Swal.fire({
+      icon: 'error',
+      title: '복사 실패',
+      text: '복사에 실패했습니다. 직접 선택하여 복사해주세요.',
+      confirmButtonText: '확인',
+      confirmButtonColor: '#4CAF50'
+    });
   }
+}
+
+// ===== 문제 붙여넣기 (채팅창에) =====
+function pasteProblem() {
+  const text = problemTextarea.value.trim();
+  
+  if (!text) {
+    Swal.fire({
+      icon: 'warning',
+      title: '문제를 먼저 작성해주세요',
+      text: '붙여넣을 문제를 먼저 작성해주세요!',
+      confirmButtonText: '확인',
+      confirmButtonColor: '#4CAF50'
+    });
+    return;
+  }
+  
+  // 채팅 입력창에 문제 내용 붙여넣기
+  chatInput.value = text;
+  chatInput.focus();
+  
+  // 버튼 피드백
+  const originalText = pasteBtn.textContent;
+  pasteBtn.textContent = '붙여넣음! ✓';
+  pasteBtn.style.background = '#b4f8c8';
+  
+  setTimeout(() => {
+    pasteBtn.textContent = originalText;
+    pasteBtn.style.background = '';
+  }, 1500);
 }
 
 // ===== 문제 제출 =====
@@ -133,18 +182,36 @@ async function submitProblem() {
   const revisedProblem = revisedProblemTextarea.value.trim();
   
   if (!name) {
-    alert('이름을 먼저 입력해주세요!');
+    Swal.fire({
+      icon: 'warning',
+      title: '이름을 입력해주세요',
+      text: '이름을 먼저 입력해주세요!',
+      confirmButtonText: '확인',
+      confirmButtonColor: '#4CAF50'
+    });
     nameInput.focus();
     return;
   }
   
   if (!originalProblem) {
-    alert('처음 만든 문제를 먼저 작성해주세요!');
+    Swal.fire({
+      icon: 'warning',
+      title: '문제를 작성해주세요',
+      text: '처음 만든 문제를 먼저 작성해주세요!',
+      confirmButtonText: '확인',
+      confirmButtonColor: '#4CAF50'
+    });
     return;
   }
   
   if (!revisedProblem) {
-    alert('수정한 문제를 작성해주세요!');
+    Swal.fire({
+      icon: 'warning',
+      title: '수정한 문제를 작성해주세요',
+      text: '수정한 문제를 작성해주세요!',
+      confirmButtonText: '확인',
+      confirmButtonColor: '#4CAF50'
+    });
     revisedProblemTextarea.focus();
     return;
   }
@@ -153,7 +220,18 @@ async function submitProblem() {
   const chatHistoryText = formatChatHistory();
   
   // 제출 확인
-  if (!confirm(`${name}님, 문제를 제출하시겠습니까?`)) {
+  const result = await Swal.fire({
+    icon: 'question',
+    title: '문제를 제출하시겠습니까?',
+    text: `${name}님, 문제를 제출하시겠습니까?`,
+    showCancelButton: true,
+    confirmButtonText: '네, 제출할래요!',
+    cancelButtonText: '아니요',
+    confirmButtonColor: '#4CAF50',
+    cancelButtonColor: '#d33'
+  });
+  
+  if (!result.isConfirmed) {
     return;
   }
   
@@ -175,7 +253,13 @@ async function submitProblem() {
     });
     
     // 성공 메시지
-    alert(`${name}님의 문제가 제출되었습니다! 🎉\n\n수고하셨어요!`);
+    await Swal.fire({
+      icon: 'success',
+      title: '제출 완료! 🎉',
+      html: `<strong>${name}님</strong>의 문제가 제출되었습니다!<br><br>수고하셨어요!`,
+      confirmButtonText: '확인',
+      confirmButtonColor: '#4CAF50'
+    });
     
     // 폼 초기화
     nameInput.value = '';
@@ -191,14 +275,20 @@ async function submitProblem() {
         <div class="emoji">👨‍🏫</div>
         <p>안녕하세요! AI 선생님이에요.<br>제출하기 전 AI 선생님의 피드백을 받고 문제를 수정하여 제출하세요!</p>
         <div class="instruction">
-          💡 <strong>팁:</strong> 위에서 <strong>복사 버튼</strong>을 클릭한 후, 아래 채팅창에 붙여넣기(<strong>Ctrl+V</strong>)하여 "이 문제가 괜찮을까요?"라고 물어보세요!
+          💡 <strong>팁:</strong> 아래 채팅창에 <strong>붙여넣기 버튼</strong>을 클릭하여 "이 문제가 괜찮을까요?"라고 물어보세요!
         </div>
       </div>
     `;
     
   } catch (error) {
     console.error('제출 실패:', error);
-    alert('제출에 실패했습니다. 다시 시도해주세요.');
+    Swal.fire({
+      icon: 'error',
+      title: '제출 실패',
+      text: '제출에 실패했습니다. 다시 시도해주세요.',
+      confirmButtonText: '확인',
+      confirmButtonColor: '#4CAF50'
+    });
   } finally {
     // 버튼 활성화
     finalSubmitBtn.disabled = false;
